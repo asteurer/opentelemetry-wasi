@@ -1,0 +1,119 @@
+interface logs {
+    use types.{instrumentation-scope, %resource};
+    use tracing.{span-id, trace-id, trace-flags};
+    use wasi:clocks/wall-clock@0.2.0.{datetime};
+
+    /// Emits a log record
+    emit: func(data: log-record) -> result<_, error>;
+
+    /// An error resulting from `emit` being called.
+    type error = string;
+
+    /// Represents the recording of an event.
+    record log-record {
+        /// Time when the event occurred.
+        timestamp: option<datetime>,
+        /// Time when the event was observed.
+        observed-timestamp: option<datetime>,
+        /// Request trace id.
+        trace-id: trace-id,
+        /// Request span id.
+        span-id: span-id,
+        /// W3C trace flag.
+        trace-flags: option<trace-flags>,
+        /// The severity (also known as log level).
+        severity: option<severity>,
+        /// The body of the log record.
+        body: option<body-type>,
+        /// Describes the source of the log.
+        %resource: %resource,
+        /// Describes the scope that emitted the log.
+        instrumentation-scope: instrumentation-scope,
+        /// Additional information about the specific event occurrence.
+        ///
+        /// Distinct from the [standard attribute](https://opentelemetry.io/docs/specs/otel/common/#attribute) type.
+        /// See https://opentelemetry.io/docs/specs/otel/logs/data-model/#field-attributes
+        attributes: list<log-key-value>,
+        /// Name that identifies the class / type of event.
+        event-name: option<string>,
+    }
+
+    /// This corresponds with the `any` type defined in the [Log Data Model](https://opentelemetry.io/docs/specs/otel/logs/data-model/#type-any).
+    ///
+    /// Complex nested data structures will need to be serialized into a string (e.g., JSON) or byte array.
+    variant body-type {
+        value(any-type),
+        bytes(list<u8>),
+        %list(any-type),
+        map(list<log-key-value>),
+    }
+
+    /// This corresponds with the `map<string, any>` type defined in the [Log Data Model](https://opentelemetry.io/docs/specs/otel/logs/data-model/#type-mapstring-any).
+    record log-key-value {
+        /// The attribute name.
+        key: string,
+        /// The attribute value.
+        value: any-type,
+    }
+
+    /// The scalar values defined in the [Log Data Model](https://opentelemetry.io/docs/specs/otel/logs/data-model/#type-any).
+    variant any-type {
+        integer(s64),
+        double(f64),
+        %string(string),
+        boolean(bool),
+        empty,
+    }
+
+    /// The severity (also known as log level).
+    enum severity {
+        /// Trace = 1,
+        trace,
+        /// Trace2 = 2,
+        trace2,
+        /// Trace3 = 3,
+        trace3,
+        /// Trace4 = 4,
+        trace4,
+        /// Debug = 5,
+        debug,
+        /// Debug2 = 6,
+        debug2,
+        /// Debug3 = 7,
+        debug3,
+        /// Debug4 = 8,
+        debug4,
+        /// Info = 9,
+        info,
+        /// Info2 = 10,
+        info2,
+        /// Info3 = 11,
+        info3,
+        /// Info4 = 12,
+        info4,
+        /// Warn = 13,
+        warn,
+        /// Warn2 = 14,
+        warn2,
+        /// Warn3 = 15,
+        warn3,
+        /// Warn4 = 16,
+        warn4,
+        /// Error = 17,
+        error,
+        /// Error2 = 18,
+        error2,
+        /// Error3 = 19,
+        error3,
+        /// Error4 = 20,
+        error4,
+        /// Fatal = 21,
+        fatal,
+        /// Fatal2 = 22,
+        fatal2,
+        /// Fatal3 = 23,
+        fatal3,
+        /// Fatal4 = 24,
+        fatal4,
+    }
+}
