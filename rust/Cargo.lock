@@ -394,11 +394,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "opentelemetry"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b84bcd6ae87133e903af7ef497404dda70c60d0ea14895fc8a5e6722754fc2a0"
+dependencies = [
+ "js-sys",
+]
+
+[[package]]
+name = "opentelemetry-appender-tracing"
+version = "0.31.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef6a1ac5ca3accf562b8c306fa8483c85f4390f768185ab775f242f7fe8fdcc2"
+dependencies = [
+ "opentelemetry 0.31.0",
+ "tracing",
+ "tracing-core",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "opentelemetry-wasi"
 version = "0.27.0"
 dependencies = [
  "anyhow",
- "opentelemetry",
+ "opentelemetry 0.30.0",
  "opentelemetry_sdk",
  "spin-sdk",
  "tracing",
@@ -416,7 +437,7 @@ dependencies = [
  "futures-channel",
  "futures-executor",
  "futures-util",
- "opentelemetry",
+ "opentelemetry 0.30.0",
  "percent-encoding",
  "rand",
  "serde_json",
@@ -634,7 +655,7 @@ name = "spin-basic"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "opentelemetry",
+ "opentelemetry 0.30.0",
  "opentelemetry-wasi",
  "opentelemetry_sdk",
  "spin-sdk",
@@ -649,6 +670,20 @@ dependencies = [
  "futures",
  "once_cell",
  "wit-bindgen 0.16.0",
+]
+
+[[package]]
+name = "spin-logs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "opentelemetry 0.30.0",
+ "opentelemetry-appender-tracing",
+ "opentelemetry-wasi",
+ "opentelemetry_sdk",
+ "spin-sdk",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -669,7 +704,7 @@ name = "spin-metrics"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "opentelemetry",
+ "opentelemetry 0.30.0",
  "opentelemetry-wasi",
  "opentelemetry_sdk",
  "spin-sdk",
@@ -703,7 +738,7 @@ name = "spin-tracing"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "opentelemetry",
+ "opentelemetry 0.30.0",
  "opentelemetry-wasi",
  "opentelemetry_sdk",
  "spin-sdk",
@@ -840,7 +875,7 @@ checksum = "ddcf5959f39507d0d04d6413119c04f33b623f4f951ebcbdddddfad2d0623a9c"
 dependencies = [
  "js-sys",
  "once_cell",
- "opentelemetry",
+ "opentelemetry 0.30.0",
  "opentelemetry_sdk",
  "smallvec",
  "tracing",
