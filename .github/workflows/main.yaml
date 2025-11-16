@@ -1,0 +1,12 @@
+name: Integration Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/asteurer/opentelemetry-wasi-integration-tests-base:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run integration tests
+        run: test-runner

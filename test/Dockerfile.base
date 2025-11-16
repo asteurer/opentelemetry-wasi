@@ -1,0 +1,60 @@
+ARG GO_VERSION
+
+####################################################################
+### This build layer is for binaries that update less frequently ###
+####################################################################
+FROM rust:1.91.0-slim-bookworm AS stable-binary-provider
+
+RUN rustup target add wasm32-wasip1 wasm32-wasip2
+
+RUN apt update \
+    && apt install -y --no-install-recommends \
+        git \
+        g++ \
+        libssl-dev \
+        pkg-config \
+        curl
+
+# Clone a version of Spin with WASI OTel
+RUN git clone --branch wasi-otel https://github.com/asteurer/spin \
+    && cd spin \
+    && git checkout 919fcacf2ad98152ddff4ae8fe181760a08bc5d5
+
+# Build Spin
+RUN cd spin \
+    && cargo build --release
+
+# Install the OpenTelemetry collector
+ARG OTEL_VERSION
+RUN FILENAME="otelcol-contrib_${OTEL_VERSION}_linux_amd64.tar.gz" \
+    && BASE_URL="https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}" \
+    && curl -fsSLo "$FILENAME" "$BASE_URL/$FILENAME" \
+    && curl -fsSLo checksums.txt "$BASE_URL/opentelemetry-collector-releases_otelcol-contrib_checksums.txt" \
+    && grep "$FILENAME\s*$" checksums.txt | sha256sum -c - \
+    && tar -xzf "$FILENAME" \
+    && rm "$FILENAME" checksums.txt README.md
+
+#############################################################################
+### This build layer is for binaries that are likely to change more often ###
+#############################################################################
+FROM golang:${GO_VERSION} AS unstable-binary-provider
+COPY ./test/test_runner /test_runner
+WORKDIR /test_runner
+RUN go build -o test-runner main.go
+
+####################################################################################################################
+### This is the final layer, and should only include the binaries that are required to run the integration tests ###
+####################################################################################################################
+FROM rust:1.91.0-slim-bookworm
+
+COPY --from=stable-binary-provider /spin/target/release/spin /usr/local/bin
+COPY --from=stable-binary-provider /otelcol-contrib /usr/local/bin
+COPY --from=unstable-binary-provider /test_runner/test-runner /usr/local/bin
+
+# Add compilation targets for building Spin apps
+RUN rustup target add wasm32-wasip1 wasm32-wasip2
+
+# Make sure non-package dependencies are accessible
+RUN spin --version \
+    && otelcol-contrib --version \
+    && type test-runner

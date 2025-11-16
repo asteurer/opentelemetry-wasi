@@ -1,0 +1,60 @@
+- path: rust/examples/spin-basic
+  data:
+    metrics:
+      - resource:
+          attributes:
+            - key: "service.name"
+              value:
+                stringValue: "spin-metrics"
+        scopeMetrics:
+          - scope:
+              name: "spin-meter"
+            metrics:
+              - name: "spin-counter"
+                sum:
+                  isMonotonic: true
+                  dataPoints:
+                    - attributes:
+                        - key: "spinkey1"
+                          value:
+                            stringValue: "spinvalue1"
+                        - key: "spinkey2"
+                          value:
+                            stringValue: "spinvalue2"
+                      asInt: "10"
+              - name: "spin-up-down-counter"
+                sum:
+                  dataPoints:
+                    - attributes:
+                        - key: "spinkey1"
+                          value:
+                            stringValue: "spinvalue1"
+                        - key: "spinkey2"
+                          value:
+                            stringValue: "spinvalue2"
+                      asInt: "-1"
+              - name: "spin-histogram"
+                histogram:
+                  dataPoints:
+                    - attributes:
+                        - key: "spinkey1"
+                          value:
+                            stringValue: "spinvalue1"
+                        - key: "spinkey2"
+                          value:
+                            stringValue: "spinvalue2"
+                      count: "1"
+                      sum: 9
+                      min: 9
+                      max: 9
+              - name: "spin-gauge"
+                gauge:
+                  dataPoints:
+                    - attributes:
+                        - key: "spinkey1"
+                          value:
+                            stringValue: "spinvalue1"
+                        - key: "spinkey2"
+                          value:
+                            stringValue: "spinvalue2"
+                      asInt: "8"

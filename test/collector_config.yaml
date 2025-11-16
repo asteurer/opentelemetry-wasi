@@ -1,0 +1,25 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: localhost:4318
+
+exporters:
+  file/logs:
+    path: logs.jsonl
+  file/metrics:
+    path: metrics.jsonl
+  file/traces:
+    path: traces.jsonl
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [file/traces]
+    metrics:
+      receivers: [otlp]
+      exporters: [file/metrics]
+    logs:
+      receivers: [otlp]
+      exporters: [file/logs]
