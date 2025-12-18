@@ -260,8 +260,6 @@ dependencies = [
 [[package]]
 name = "fake-opentelemetry-collector"
 version = "0.33.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6916bf0b12e8e88eb85bf5cb75ef5556e05a2b6e067d5657758d0a31e2f53991"
 dependencies = [
  "futures",
  "hex",

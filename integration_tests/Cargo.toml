@@ -6,7 +6,8 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.100"
 insta = { version = "1.44.1", features = ["yaml", "redactions"] }
-fake-opentelemetry-collector = "0.33"
+# fake-opentelemetry-collector = "0.33"
+fake-opentelemetry-collector = { path = "../../tracing-opentelemetry-instrumentation-sdk/fake-opentelemetry-collector" }
 reqwest = "0.12.24"
 sysinfo = "0.37.2"
 tokio = "1.48.0"

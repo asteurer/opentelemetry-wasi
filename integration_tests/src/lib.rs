@@ -15,6 +15,16 @@ mod tests {
         time::Duration,
     };
 
+    /// Makes the creation of a SpanTree easier to read.
+    macro_rules! span_tree {
+        ($name:expr => [$($($child:tt)=>+),* $(,)?]) => {
+            SpanTree::new($name, vec![$(span_tree!($($child)=>+)),*])
+        };
+        ($name:expr) => {
+            SpanTree::leaf($name)
+        }
+    }
+
     #[tokio::test]
     #[serial]
     async fn rust_spin_basic() {
@@ -25,6 +35,22 @@ mod tests {
 
         // Run tests.
         basic_signal_validation("rust_spin_basic", Some(&spans), Some(&metrics), Some(&logs));
+        // TODO: the spin-basic application only exports 4 spans...
+        span_paternity_test(
+            &spans,
+            span_tree!(
+                "GET /..." => [
+                    "execute_wasm_component spin-tracing" => [
+                        "main-operation" => [
+                            "child-operation" => [
+                                "spin_key_value.open",
+                                "spin_key_value.set",
+                            ],
+                        ],
+                    ],
+                ]
+            ),
+        );
     }
 
     #[tokio::test]
@@ -37,6 +63,21 @@ mod tests {
 
         // Run tests.
         basic_signal_validation("rust_spin_tracing", Some(&spans), None, Some(&logs));
+        span_paternity_test(
+            &spans,
+            span_tree!(
+                "GET /..." => [
+                    "execute_wasm_component spin-tracing" => [
+                        "main_operation" => [
+                            "child_operation" => [
+                                "spin_key_value.open",
+                                "spin_key_value.set",
+                            ],
+                        ],
+                    ],
+                ]
+            ),
+        );
     }
 
     /// Performs a basic validation on each telemetry signal's struct field.
@@ -99,6 +140,14 @@ mod tests {
         }
     }
 
+    /// Ensures that each span exported is a legitimate child of its expected parent.
+    ///
+    /// Note: Ensure that the `expected_span_names` slice is ordered ROOT -> LEAF
+    fn span_paternity_test(spans: &[ExportedSpan], expected: SpanTree) {
+        let actual = SpanTree::from_exported_spans(spans);
+        assert_eq!(actual, expected)
+    }
+
     async fn get_telemetry_from_spin_app(
         path: &str,
     ) -> Result<(Vec<ExportedSpan>, Vec<ExportedMetric>, Vec<ExportedLog>), Error> {
@@ -111,9 +160,14 @@ mod tests {
         app.instantiate()?;
         app.invoke().await?;
 
+        tokio::time::sleep(Duration::from_secs(30)).await;
+        drop(app);
+
+        // Ignore the {collector_min} and wait for {timeout}
+        let timeout = Duration::from_secs(0);
+        let collector_min = usize::MAX;
+
         // Retrieve telemetry data.
-        let timeout = Duration::from_secs(10);
-        let collector_min = 6;
         let spans = collector.exported_spans(collector_min, timeout).await;
         let metrics = collector.exported_metrics(collector_min, timeout).await;
         let logs = collector.exported_logs(collector_min, timeout).await;
@@ -196,6 +250,59 @@ mod tests {
                     }
                 }
             }
+        }
+    }
+
+    /// A tree structure representing nested spans.
+    #[derive(PartialEq, Eq, Debug)]
+    struct SpanTree<'a> {
+        name: &'a str,
+        children: Option<Vec<SpanTree<'a>>>,
+    }
+
+    impl<'a> SpanTree<'a> {
+        /// Create a SpanTree with children.
+        fn new(name: &'a str, children: Vec<SpanTree<'a>>) -> Self {
+            Self {
+                name,
+                children: Some(children),
+            }
+        }
+
+        /// Create a SpanTree with no children.
+        fn leaf(name: &'a str) -> Self {
+            Self {
+                name,
+                children: None,
+            }
+        }
+
+        /// Recursively parse the children of an `ExportedSpan` into a `SpanTree`.
+        fn build_node(parent: &'a ExportedSpan, all_spans: &'a [ExportedSpan]) -> Self {
+            let children: Vec<SpanTree<'a>> = all_spans
+                .iter()
+                .filter(|e| e.parent_span_id == parent.span_id)
+                .map(|child| Self::build_node(child, all_spans))
+                .collect();
+
+            Self {
+                name: &parent.name,
+                children: if children.is_empty() {
+                    None
+                } else {
+                    Some(children)
+                },
+            }
+        }
+
+        /// Convert a list of `ExportedSpan`s to a `SpanTree`.
+        fn from_exported_spans(spans: &'a [ExportedSpan]) -> Self {
+            let root = spans
+                .iter()
+                .find(|&e| e.parent_span_id.is_empty())
+                .expect("Unable to find root span");
+
+            Self::build_node(root, spans)
         }
     }
 }
