@@ -7,7 +7,9 @@ replace github.com/calebschoepp/opentelemetry-wasi/wit_component => ./wit_compon
 require (
 	github.com/calebschoepp/opentelemetry-wasi/wit_component v0.0.0-00010101000000-000000000000
 	go.opentelemetry.io/otel v1.39.0
+	go.opentelemetry.io/otel/log v0.14.0
 	go.opentelemetry.io/otel/sdk v1.39.0
+	go.opentelemetry.io/otel/sdk/log v0.15.0
 	go.opentelemetry.io/otel/sdk/metric v1.39.0
 )
 

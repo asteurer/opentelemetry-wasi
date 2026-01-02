@@ -1,93 +1,26 @@
 package metrics
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 
+	"github.com/calebschoepp/opentelemetry-wasi/types"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_clocks_wall_clock"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_metrics"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_types"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wit_types"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/sdk/instrumentation"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 )
 
 func toWasiResourceMetrics(rm metricdata.ResourceMetrics) wasi_otel_metrics.ResourceMetrics {
+	var r wasi_otel_types.Resource
+	if rm.Resource != nil {
+		r = types.ToWasiResource(*rm.Resource)
+	}
+
 	return wasi_otel_metrics.ResourceMetrics{
-		Resource: wasi_otel_types.Resource{
-			Attributes: toWasiAttributes(rm.Resource.Attributes()),
-			SchemaUrl:  toWasiOptStr(rm.Resource.SchemaURL()),
-		},
+		Resource:     r, // Default to empty resource if nil
 		ScopeMetrics: toWasiScopeMetrics(rm.ScopeMetrics),
 	}
-}
-
-func toWasiAttributes(attrs []attribute.KeyValue) []wasi_otel_types.KeyValue {
-	result := make([]wasi_otel_types.KeyValue, len(attrs))
-	for i, attr := range attrs {
-		result[i] = wasi_otel_types.KeyValue{
-			Key:   string(attr.Key),
-			Value: otelValueToJson(attr.Value),
-		}
-
-	}
-
-	return result
-}
-
-func otelValueToJson(v attribute.Value) string {
-	switch v.Type() {
-	case attribute.BOOL:
-		return fmt.Sprint(v.AsBool())
-	case attribute.BOOLSLICE:
-		bytes, err := json.Marshal(v.AsBoolSlice())
-		if err != nil {
-			panic(err)
-		}
-		return string(bytes)
-	case attribute.INT64:
-		return fmt.Sprint(v.AsInt64())
-	case attribute.INT64SLICE:
-		bytes, err := json.Marshal(v.AsInt64Slice())
-		if err != nil {
-			panic(err)
-		}
-		return string(bytes)
-	case attribute.FLOAT64:
-		return fmt.Sprint(v.AsFloat64())
-	case attribute.FLOAT64SLICE:
-		bytes, err := json.Marshal(v.AsFloat64Slice())
-		if err != nil {
-			panic(err)
-		}
-		return string(bytes)
-	case attribute.STRING:
-		bytes, err := json.Marshal(v.AsString())
-		if err != nil {
-			panic(err)
-		}
-		return string(bytes)
-	case attribute.STRINGSLICE:
-		bytes, err := json.Marshal(v.AsStringSlice())
-		if err != nil {
-			panic(err)
-		}
-		return string(bytes)
-	case attribute.INVALID:
-		panic("invalid type")
-	default:
-		panic("unsupported type")
-	}
-}
-
-func toWasiOptStr(s string) wit_types.Option[string] {
-	if s == "" {
-		return wit_types.None[string]()
-	}
-
-	return wit_types.Some(s)
 }
 
 func toWasiScopeMetrics(sm []metricdata.ScopeMetrics) []wasi_otel_metrics.ScopeMetrics {
@@ -95,21 +28,12 @@ func toWasiScopeMetrics(sm []metricdata.ScopeMetrics) []wasi_otel_metrics.ScopeM
 
 	for i, m := range sm {
 		result[i] = wasi_otel_metrics.ScopeMetrics{
-			Scope:   toWasiInstrumentationScope(m.Scope),
+			Scope:   types.ToWasiInstrumentationScope(m.Scope),
 			Metrics: toWasiMetrics(m.Metrics),
 		}
 	}
 
 	return result
-}
-
-func toWasiInstrumentationScope(s instrumentation.Scope) wasi_otel_types.InstrumentationScope {
-	return wasi_otel_types.InstrumentationScope{
-		Name:       s.Name,
-		Version:    toWasiOptStr(s.Version),
-		SchemaUrl:  toWasiOptStr(s.SchemaURL),
-		Attributes: toWasiAttributes(s.Attributes.ToSlice()),
-	}
 }
 
 func toWasiMetrics(metrics []metricdata.Metrics) []wasi_otel_metrics.Metric {
@@ -216,7 +140,7 @@ func toWasiGaugeDataPoint[T float64 | int64](dataPoints []metricdata.DataPoint[T
 	result := make([]wasi_otel_metrics.GaugeDataPoint, len(dataPoints))
 	for i, dp := range dataPoints {
 		result[i] = wasi_otel_metrics.GaugeDataPoint{
-			Attributes: toWasiAttributes(dp.Attributes.ToSlice()),
+			Attributes: types.ToWasiAttributes(dp.Attributes.ToSlice()),
 			Value:      toWasiMetricNumber(dp.Value),
 			Exemplars:  toWasiExemplar(dp.Exemplars),
 		}
@@ -229,7 +153,7 @@ func toWasiSumDataPoint[T float64 | int64](dataPoints []metricdata.DataPoint[T])
 	result := make([]wasi_otel_metrics.SumDataPoint, len(dataPoints))
 	for i, dp := range dataPoints {
 		result[i] = wasi_otel_metrics.SumDataPoint{
-			Attributes: toWasiAttributes(dp.Attributes.ToSlice()),
+			Attributes: types.ToWasiAttributes(dp.Attributes.ToSlice()),
 			Value:      toWasiMetricNumber(dp.Value),
 			Exemplars:  toWasiExemplar(dp.Exemplars),
 		}
@@ -242,7 +166,7 @@ func toWasiHistogramDataPoint[T float64 | int64](dataPoints []metricdata.Histogr
 	result := make([]wasi_otel_metrics.HistogramDataPoint, len(dataPoints))
 	for i, dp := range dataPoints {
 		result[i] = wasi_otel_metrics.HistogramDataPoint{
-			Attributes:   toWasiAttributes(dp.Attributes.ToSlice()),
+			Attributes:   types.ToWasiAttributes(dp.Attributes.ToSlice()),
 			Count:        dp.Count,
 			Bounds:       dp.Bounds,
 			BucketCounts: dp.BucketCounts,
@@ -260,7 +184,7 @@ func toWasiExponentialHistogram[T float64 | int64](dataPoints []metricdata.Expon
 	result := make([]wasi_otel_metrics.ExponentialHistogramDataPoint, len(dataPoints))
 	for i, dp := range dataPoints {
 		result[i] = wasi_otel_metrics.ExponentialHistogramDataPoint{
-			Attributes: toWasiAttributes(dp.Attributes.ToSlice()),
+			Attributes: types.ToWasiAttributes(dp.Attributes.ToSlice()),
 			Count:      dp.Count,
 			Min:        toWasiOptMetricNumber(dp.Min),
 			Max:        toWasiOptMetricNumber(dp.Max),
@@ -318,8 +242,8 @@ func toWasiExemplar[T float64 | int64](exemplars []metricdata.Exemplar[T]) []was
 	result := make([]wasi_otel_metrics.Exemplar, len(exemplars))
 	for i, e := range exemplars {
 		result[i] = wasi_otel_metrics.Exemplar{
-			FilteredAttributes: toWasiAttributes(e.FilteredAttributes),
-			Time:               toWasiTime(e.Time),
+			FilteredAttributes: types.ToWasiAttributes(e.FilteredAttributes),
+			Time:               types.ToWasiTime(e.Time),
 			Value:              toWasiMetricNumber(e.Value),
 			SpanId:             string(e.SpanID),
 			TraceId:            string(e.TraceID),
@@ -327,13 +251,6 @@ func toWasiExemplar[T float64 | int64](exemplars []metricdata.Exemplar[T]) []was
 	}
 
 	return result
-}
-
-func toWasiTime(t time.Time) wasi_clocks_wall_clock.Datetime {
-	return wasi_clocks_wall_clock.Datetime{
-		Seconds:     uint64(t.Unix()),
-		Nanoseconds: uint32(t.Nanosecond()),
-	}
 }
 
 // timestampProvider is a constraint for types that have StartTime and Time fields
@@ -346,7 +263,7 @@ type timestampProvider interface {
 // extractTimestamps extracts StartTime and Time from the first data point in a slice
 func extractTimestamps[T timestampProvider](dataPoints []T) (startTime *wasi_clocks_wall_clock.Datetime, timeRecorded wasi_clocks_wall_clock.Datetime) {
 	if len(dataPoints) == 0 {
-		return nil, toWasiTime(time.Now())
+		return nil, types.ToWasiTime(time.Now())
 	}
 
 	// Use type assertion to access the fields
@@ -368,7 +285,7 @@ func extractTimestamps[T timestampProvider](dataPoints []T) (startTime *wasi_clo
 		panic("unsupported types")
 	}
 
-	resultStart := toWasiTime(start)
+	resultStart := types.ToWasiTime(start)
 
-	return &resultStart, toWasiTime(timeVal)
+	return &resultStart, types.ToWasiTime(timeVal)
 }

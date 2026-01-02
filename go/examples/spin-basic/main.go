@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
+	wasiLogs "github.com/calebschoepp/opentelemetry-wasi/logs"
 	wasiMetrics "github.com/calebschoepp/opentelemetry-wasi/metrics"
 	spinhttp "github.com/spinframework/spin-go-sdk/v3/http"
 	"github.com/spinframework/spin-go-sdk/v3/kv"
 	"go.opentelemetry.io/otel/attribute"
-	api "go.opentelemetry.io/otel/metric"
+	logApi "go.opentelemetry.io/otel/log"
+	metricApi "go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/metric"
 )
 
@@ -17,13 +20,27 @@ func init() {
 	spinhttp.Handle(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 
+		/*
+			### LOGS ###
+		*/
+
+		loggerProvider := log.NewLoggerProvider(log.WithProcessor(wasiLogs.NewWasiLogProcessor()))
+		logger := loggerProvider.Logger("spin-logs")
+		logRecord := logApi.Record{}
+		logRecord.SetBody(logApi.StringValue("Hello from Go!"))
+		logRecord.SetSeverity(logApi.SeverityInfo)
+		logger.Emit(ctx, logRecord)
+
+		/*
+			### METRICS ###
+		*/
 		exporter := wasiMetrics.NewWasiMetricExporter()
 		defer exporter.Export(ctx) // Export metrics to the host
 
 		meterProvider := metric.NewMeterProvider(metric.WithReader(exporter))
 		meter := meterProvider.Meter("spin-metrics")
 
-		attrs := api.WithAttributes(
+		attrs := metricApi.WithAttributes(
 			attribute.Key("spinkey1").String("spinvalue1"),
 			attribute.Key("spinkey2").String("spinvalue2"),
 		)
