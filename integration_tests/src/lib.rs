@@ -43,12 +43,12 @@ mod tests {
     #[serial]
     async fn go_spin_basic() {
         // Retrieve telemetry.
-        let (_spans, metrics, logs) = get_telemetry_from_spin_app("../go/examples/spin-basic")
+        let (spans, metrics, logs) = get_telemetry_from_spin_app("../go/examples/spin-basic")
             .await
             .expect("Failed to retrieve telemetry from Spin app");
 
         // Run tests.
-        basic_signal_validation("go_spin_basic", None, Some(&metrics), Some(&logs));
+        basic_signal_validation("go_spin_basic", Some(&spans), Some(&metrics), Some(&logs));
     }
 
     /// Performs a basic validation on each telemetry signal's struct field.

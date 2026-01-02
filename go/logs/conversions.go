@@ -48,7 +48,7 @@ func toWasiLogRecord(r log.Record) wasi_otel_logs.LogRecord {
 	if r.AttributesLen() == 0 {
 		attrs = wit_types.None[[]wasi_otel_types.KeyValue]()
 	} else {
-		attrList := make([]wasi_otel_types.KeyValue, r.AttributesLen())
+		attrList := make([]wasi_otel_types.KeyValue, 0)
 		r.WalkAttributes(func(attr logApi.KeyValue) bool {
 			attrList = append(attrList, wasi_otel_types.KeyValue{
 				Key:   attr.Key,

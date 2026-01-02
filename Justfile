@@ -5,7 +5,7 @@ lint:
     @cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D warnings
 
     # Linting: Go SDK
-    @cd go && golangci-lint run ./...
+    @cd go && GOOS=wasip1 GOARCH=wasm golangci-lint run ./...
 
     # Linting: Integration tests
     @cargo clippy --manifest-path integration_tests/Cargo.toml --all-targets --all-features -- -D warnings

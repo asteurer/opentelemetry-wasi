@@ -7,13 +7,17 @@ import (
 
 	wasiLogs "github.com/calebschoepp/opentelemetry-wasi/logs"
 	wasiMetrics "github.com/calebschoepp/opentelemetry-wasi/metrics"
+	wasiTracing "github.com/calebschoepp/opentelemetry-wasi/tracing"
 	spinhttp "github.com/spinframework/spin-go-sdk/v3/http"
 	"github.com/spinframework/spin-go-sdk/v3/kv"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	logApi "go.opentelemetry.io/otel/log"
 	metricApi "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func init() {
@@ -74,16 +78,41 @@ func init() {
 		}
 		gauge.Record(ctx, 123.456, attrs)
 
-		store, err := kv.OpenDefault()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		/*
+			### TRACING ###
+		*/
 
-		if err := store.Set("foo", []byte("bar")); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		tracerProvider := trace.NewTracerProvider(trace.WithSpanProcessor(wasiTracing.NewWasiSpanProcessor()))
+		propagator := wasiTracing.NewTraceContextPropagator()
+		hostCtx := propagator.Extract(ctx)
+		otel.SetTracerProvider(tracerProvider)
+
+		tracer := tracerProvider.Tracer("spin-tracer")
+
+		func() {
+			mainCtx, mainSpan := tracer.Start(hostCtx, "main-operation")
+			defer mainSpan.End()
+
+			_, childSpan := tracer.Start(mainCtx, "child-operation")
+			defer childSpan.End()
+
+			store, err := kv.OpenDefault()
+			if err != nil {
+				childSpan.RecordError(err)
+				childSpan.SetStatus(codes.Error, "failed to open kv store")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			if err := store.Set("foo", []byte("bar")); err != nil {
+				childSpan.RecordError(err)
+				childSpan.SetStatus(codes.Error, "failed to set value")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			childSpan.SetStatus(codes.Ok, "success")
+		}()
 
 		w.Header().Set("Content-Type", "text/plain")
 		fmt.Fprintln(w, "Hello World!")
