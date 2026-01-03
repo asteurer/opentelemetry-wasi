@@ -3,28 +3,31 @@
 > [!Caution]
 > This is a work-in-progress.
 
-## Running the examples
-### Requirements
+## Usage
+### Prerequisites
 - [**go**](https://go.dev/dl/) - v1.25+
 - [**componentize-go**](https://github.com/asteurer/componentize-go) - Latest version
+- [**Rust toolchain**](https://rust-lang.org/) - Latest version
+- **Spin** - Installation instructions below:
+    ```sh
+    # Spin WebAssembly Runtime
+    cargo install --git https://github.com/asteurer/spin --rev cc558b2ec0cb2cd0619c6a410325bd165f632f1e spin-cli
+    ```
 
-### Usage
-Build a version of [Spin](https://github.com/spinframework/spin) from this [branch](https://github.com/asteurer/spin/tree/wasi-otel) and install the relevant plugins:
+### Run an Example Application
 ```sh
-git clone --branch wasi-otel --depth 1 https://github.com/asteurer/spin
-cd spin
-cargo install --path .
+# Setup OTel collector and dashboards
 spin plugin update
 spin plugin install otel
-```
-
-Then, run the example of your choosing:
-```sh
-cd examples/spin-basic
-spin build
 spin otel setup
-spin otel up
-# In a different terminal...
+spin otel open jaeger # Dashboard for Traces
+spin otel open grafana # Dashboard for Metrics and Logs
+
+# Run the application
+cd examples/spin-basic
+spin otel up -- --build
+
+# Invoke the application (in a different terminal)
 curl localhost:3000
 ```
 
