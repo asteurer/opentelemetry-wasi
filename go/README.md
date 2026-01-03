@@ -35,9 +35,9 @@ curl localhost:3000
 Whenever WIT files are changed/added to the `../wit` directory, the bindings  in `./wit_component` need to be regenerated.
 
 ### Prerequisites
-- [**wit-bindgen**](https://github.com/bytecodealliance/wit-bindgen) - Latest version
+- [**componentize-go**](https://github.com/asteurer/componentize-go) - Latest version
 
 ### Run
 ```sh
-wit-bindgen go -w imports --out-dir wit_component ../wit
+componentize-go -w imports -d ../wit bindings -o wit_component
 ```
