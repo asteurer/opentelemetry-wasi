@@ -28,6 +28,11 @@ test:
     # Test: Rust SDK
     @cargo test --manifest-path rust/Cargo.toml
 
+    # Test: Go SDK
+    @cd go \
+        && GOOS=wasip1 GOARCH=wasm go test -c -o logs_test.wasm ./logs \
+        && wasmtime run --dir=. logs_test.wasm
+
     # Test: Integration tests
     @cargo test --manifest-path integration_tests/Cargo.toml
 

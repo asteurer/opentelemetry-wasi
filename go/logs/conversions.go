@@ -52,7 +52,7 @@ func toWasiLogRecord(r log.Record) wasi_otel_logs.LogRecord {
 		r.WalkAttributes(func(attr logApi.KeyValue) bool {
 			attrList = append(attrList, wasi_otel_types.KeyValue{
 				Key:   attr.Key,
-				Value: otelLogValueToJson(attr.Value),
+				Value: OtelLogValueToJson(attr.Value),
 			})
 
 			return true
@@ -87,7 +87,7 @@ func toWasiLogRecord(r log.Record) wasi_otel_logs.LogRecord {
 		ObservedTimestamp:    ots,
 		SeverityNumber:       sn,
 		SeverityText:         st,
-		Body:                 types.ToWasiOptStr(otelLogValueToJson(r.Body())),
+		Body:                 types.ToWasiOptStr(OtelLogValueToJson(r.Body())),
 		Attributes:           attrs,
 		EventName:            types.ToWasiOptStr(r.EventName()),
 		Resource:             res,
@@ -98,31 +98,73 @@ func toWasiLogRecord(r log.Record) wasi_otel_logs.LogRecord {
 	}
 }
 
-func otelLogValueToJson(v logApi.Value) string {
+func OtelLogValueToJson(v logApi.Value) string {
 	switch v.Kind() {
 	case logApi.KindBool:
-		bytes, _ := json.Marshal(v.AsBool())
+		bytes, err := json.Marshal(v.AsBool())
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	case logApi.KindFloat64:
-		bytes, _ := json.Marshal(v.AsFloat64())
+		bytes, err := json.Marshal(v.AsFloat64())
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	case logApi.KindInt64:
-		bytes, _ := json.Marshal(v.AsInt64())
+		bytes, err := json.Marshal(v.AsInt64())
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	case logApi.KindEmpty:
-		bytes, _ := json.Marshal("")
+		bytes, err := json.Marshal("")
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	case logApi.KindBytes:
-		bytes, _ := json.Marshal(fmt.Sprintf("{{base64}}:%s", base64.StdEncoding.EncodeToString(v.AsBytes())))
+		bytes, err := json.Marshal(fmt.Sprintf("{base64}:%s", base64.StdEncoding.EncodeToString(v.AsBytes())))
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	case logApi.KindString:
-		bytes, _ := json.Marshal(v.AsString())
+		bytes, err := json.Marshal(v.AsString())
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	case logApi.KindSlice:
-		bytes, _ := json.Marshal(v.AsSlice())
+		slice := v.AsSlice()
+		result := make([]any, len(slice))
+		for i, item := range slice {
+			var temp any
+			if err := json.Unmarshal([]byte(OtelLogValueToJson(item)), &temp); err != nil {
+				panic(err)
+			}
+			result[i] = temp
+		}
+		bytes, err := json.Marshal(result)
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	case logApi.KindMap:
-		bytes, _ := json.Marshal(v.AsMap())
+		kvs := v.AsMap()
+		result := make(map[string]any)
+		for _, kv := range kvs {
+			var temp any
+			if err := json.Unmarshal([]byte(OtelLogValueToJson(kv.Value)), &temp); err != nil {
+				panic(err)
+			}
+			result[kv.Key] = temp
+		}
+		bytes, err := json.Marshal(result)
+		if err != nil {
+			panic(err)
+		}
 		return string(bytes)
 	default:
 		panic("unsupported type")
