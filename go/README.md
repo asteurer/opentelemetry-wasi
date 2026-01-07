@@ -1,8 +1,4 @@
 # OpenTelemetry WASI for Go
-
-> [!Caution]
-> This is a work-in-progress.
-
 ## Usage
 ### Prerequisites
 - [**go**](https://go.dev/dl/) - v1.25+
