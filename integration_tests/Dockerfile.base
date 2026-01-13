@@ -1,4 +1,4 @@
-FROM rust:1.91.0-slim-bookworm AS stable-binary-provider
+FROM rust:1.92.0-slim-bookworm AS stable-binary-provider
 
 RUN rustup target add wasm32-wasip1 wasm32-wasip2
 
@@ -11,19 +11,22 @@ RUN apt update \
 
 # Install a version of Spin with WASI OTel
 RUN cargo install \
-    --git https://github.com/asteurer/spin \
-    --rev cc558b2ec0cb2cd0619c6a410325bd165f632f1e \
+    --git https://github.com/asteurer/spin.git \
+    --rev 966065b928e589d4073b90c6518b466b53132acb \
     spin-cli
 
-FROM rust:1.91.0-slim-bookworm
+FROM rust:1.92.0-slim-bookworm
 COPY --from=stable-binary-provider /usr/local/cargo/bin/spin /usr/local/cargo/bin/spin
 
 # Add dependencies for building Spin apps
 RUN rustup target add wasm32-wasip1 wasm32-wasip2
-RUN cargo install --git https://github.com/asteurer/componentize-go
+RUN cargo install \
+    --git https://github.com/asteurer/componentize-go.git \
+    --rev 1ac2513dcb6bd1163d4b918834ae7fbd50de033d
 
 # Add integration test suite build dependencies
 RUN apt update \
     && apt install -y --no-install-recommends \
         libssl-dev \
-        pkg-config
+        pkg-config \
+        tar
