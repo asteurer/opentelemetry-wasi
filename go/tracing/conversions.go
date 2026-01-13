@@ -4,9 +4,9 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/bytecodealliance/wit-bindgen/wit_types"
 	"github.com/calebschoepp/opentelemetry-wasi/types"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_tracing"
-	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wit_types"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/sdk/trace"
 	traceApi "go.opentelemetry.io/otel/trace"

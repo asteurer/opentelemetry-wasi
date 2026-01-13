@@ -1,7 +1,9 @@
-github.com/asteurer/spin-go-sdk/v3 v3.0.0-20251215051036-e1273e70063a h1:AEPk5HZ0liF+QXEeFhdA5rCOxlpsz+c9IjjCrHzfNXw=
-github.com/asteurer/spin-go-sdk/v3 v3.0.0-20251215051036-e1273e70063a/go.mod h1:DayYyONro3Ftl4+/+9qetVJZFuUlTf5dJYK7U87PRIA=
-github.com/asteurer/spin-go-sdk/v3/wit_component v0.0.0-20251215051036-e1273e70063a h1:WlUyz31JsCXDZkFzpN/cpeNbuP3frKz+/DD0rHFVjOc=
-github.com/asteurer/spin-go-sdk/v3/wit_component v0.0.0-20251215051036-e1273e70063a/go.mod h1:IpqEvzxcKOeqF2H1MbV/eLnufgd1uoQW4fT1xu29iXQ=
+github.com/asteurer/spin-go-sdk/v3 v3.0.0-20260113020817-75fa045751d9 h1:i+e86nBQBxyvNR3yP5gxlknHa9mCvQyVrQQ5MitYuhY=
+github.com/asteurer/spin-go-sdk/v3 v3.0.0-20260113020817-75fa045751d9/go.mod h1:b4Z5IRJcOVIt4lYHebmSMPS/JPE38pChTZe9iE1BnEU=
+github.com/asteurer/spin-go-sdk/v3/wit_component v0.0.0-20260113020817-75fa045751d9 h1:U5K6MKIGjOb+Ptgpfwec0+mZvzj4+CTw/davv90Wu5U=
+github.com/asteurer/spin-go-sdk/v3/wit_component v0.0.0-20260113020817-75fa045751d9/go.mod h1:xc0tW9yYtI6BGz5fenI4lzx3dywWZVaYOwJ9SVqyjqA=
+github.com/bytecodealliance/wit-bindgen/crates/go/src/package v0.51.0 h1:fbwpkAmU6eZnDQpBHrdQwPXi5atE0KSfjU8zwFkClnw=
+github.com/bytecodealliance/wit-bindgen/crates/go/src/package v0.51.0/go.mod h1:MUXxhOBN0hAtqHjc9/9XAEiXcGhcwYL6PeDXkKwVZN0=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

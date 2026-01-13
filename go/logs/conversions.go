@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/bytecodealliance/wit-bindgen/wit_types"
 	"github.com/calebschoepp/opentelemetry-wasi/types"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_clocks_wall_clock"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_logs"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_tracing"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_types"
-	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wit_types"
 	logApi "go.opentelemetry.io/otel/log"
 	"go.opentelemetry.io/otel/sdk/log"
 )

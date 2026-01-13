@@ -1,6 +1,6 @@
 module github.com/calebschoepp/opentelemetry-wasi/examples/spin-basic
 
-go 1.25
+go 1.25.5
 
 require (
 	github.com/calebschoepp/opentelemetry-wasi v0.0.0-00010101000000-000000000000
@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	github.com/bytecodealliance/wit-bindgen v0.0.0-00010101000000-000000000000 // indirect
 	github.com/calebschoepp/opentelemetry-wasi/wit_component v0.0.0-00010101000000-000000000000 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -26,10 +27,12 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 )
 
-replace github.com/spinframework/spin-go-sdk/v3 => github.com/asteurer/spin-go-sdk/v3 v3.0.0-20251215051036-e1273e70063a
+replace github.com/spinframework/spin-go-sdk/v3 => github.com/asteurer/spin-go-sdk/v3 v3.0.0-20260113020817-75fa045751d9
 
-replace github.com/spinframework/spin-go-sdk/v3/wit_component => github.com/asteurer/spin-go-sdk/v3/wit_component v0.0.0-20251215051036-e1273e70063a
+replace github.com/spinframework/spin-go-sdk/v3/wit_component => github.com/asteurer/spin-go-sdk/v3/wit_component v0.0.0-20260113020817-75fa045751d9
 
 replace github.com/calebschoepp/opentelemetry-wasi => ../../
 
 replace github.com/calebschoepp/opentelemetry-wasi/wit_component => ../../wit_component
+
+replace github.com/bytecodealliance/wit-bindgen => github.com/bytecodealliance/wit-bindgen/crates/go/src/package v0.51.0

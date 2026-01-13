@@ -3,11 +3,11 @@ package metrics
 import (
 	"time"
 
+	"github.com/bytecodealliance/wit-bindgen/wit_types"
 	"github.com/calebschoepp/opentelemetry-wasi/types"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_clocks_wall_clock"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_metrics"
 	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wasi_otel_types"
-	"github.com/calebschoepp/opentelemetry-wasi/wit_component/wit_types"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 )
 
