@@ -1,0 +1,2 @@
+worlds = ["imports"]
+wit_paths = ["../wit"]
